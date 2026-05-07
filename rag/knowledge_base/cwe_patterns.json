@@ -1,0 +1,163 @@
+[
+  {
+    "cwe_id": "CWE-89",
+    "name": "SQL Injection",
+    "severity": "CRITICAL",
+    "description": "User-controlled input is incorporated into SQL queries without proper sanitization or parameterization.",
+    "detection_patterns": [
+      "string concatenation into SQL query",
+      "f-string used to build SQL",
+      ".format() used in SQL string",
+      "% operator used in SQL string",
+      "cursor.execute with concatenated string"
+    ],
+    "fix": "Use parameterized queries: cursor.execute('SELECT * FROM t WHERE id = %s', (user_id,))",
+    "languages": ["python", "php", "java", "javascript"]
+  },
+  {
+    "cwe_id": "CWE-78",
+    "name": "OS Command Injection",
+    "severity": "CRITICAL",
+    "description": "User input is passed unsanitized to shell commands, allowing arbitrary OS command execution.",
+    "detection_patterns": [
+      "os.system() with user input",
+      "subprocess.call(shell=True) with user input",
+      "subprocess.Popen(shell=True) with user input",
+      "exec() with user input",
+      "eval() with user input"
+    ],
+    "fix": "Use subprocess with a list of arguments and shell=False: subprocess.run(['ping', host], shell=False)",
+    "languages": ["python", "php", "ruby"]
+  },
+  {
+    "cwe_id": "CWE-79",
+    "name": "Cross-Site Scripting (XSS)",
+    "severity": "HIGH",
+    "description": "Untrusted user input is rendered in HTML without proper escaping, allowing script injection.",
+    "detection_patterns": [
+      "innerHTML = user input",
+      "document.write() with user input",
+      "render_template_string with user input",
+      "Markup() wrapping user input",
+      "| safe filter on user input in Jinja2"
+    ],
+    "fix": "Escape all user-supplied data before rendering in HTML. Use template auto-escaping.",
+    "languages": ["javascript", "python", "php"]
+  },
+  {
+    "cwe_id": "CWE-22",
+    "name": "Path Traversal",
+    "severity": "HIGH",
+    "description": "User-supplied path input is used to access files outside the intended directory.",
+    "detection_patterns": [
+      "open() with user-supplied filename",
+      "os.path.join() with unsanitized user input",
+      "../ sequences not filtered",
+      "send_file() with user input"
+    ],
+    "fix": "Validate and sanitize file paths. Use os.path.basename() and check the resolved path stays within the allowed directory.",
+    "languages": ["python", "php", "java"]
+  },
+  {
+    "cwe_id": "CWE-502",
+    "name": "Deserialization of Untrusted Data",
+    "severity": "CRITICAL",
+    "description": "Deserializing attacker-controlled data can lead to arbitrary code execution.",
+    "detection_patterns": [
+      "pickle.loads() with user input",
+      "yaml.load() without SafeLoader",
+      "marshal.loads() with user input",
+      "jsonpickle.decode() with user input"
+    ],
+    "fix": "Never deserialize untrusted data with pickle. Use yaml.safe_load() instead of yaml.load().",
+    "languages": ["python"]
+  },
+  {
+    "cwe_id": "CWE-798",
+    "name": "Use of Hard-coded Credentials",
+    "severity": "HIGH",
+    "description": "Credentials, API keys, or secrets are embedded directly in source code.",
+    "detection_patterns": [
+      "password = \"...\" hardcoded string",
+      "api_key = \"...\" hardcoded string",
+      "SECRET_KEY = short/weak string",
+      "AWS_ACCESS_KEY_ID hardcoded",
+      "token = \"...\" hardcoded"
+    ],
+    "fix": "Store secrets in environment variables or a secrets manager. Never commit credentials to version control.",
+    "languages": ["python", "javascript", "php", "java"]
+  },
+  {
+    "cwe_id": "CWE-327",
+    "name": "Use of Broken or Risky Cryptographic Algorithm",
+    "severity": "HIGH",
+    "description": "Use of deprecated or weak cryptographic algorithms that can be broken by attackers.",
+    "detection_patterns": [
+      "hashlib.md5()",
+      "hashlib.sha1()",
+      "DES encryption",
+      "RC4 encryption",
+      "random.random() for security tokens",
+      "random.randint() for security-sensitive values"
+    ],
+    "fix": "Use bcrypt/argon2/scrypt for passwords. Use SHA-256+ for hashing. Use secrets module for random tokens.",
+    "languages": ["python", "javascript", "java"]
+  },
+  {
+    "cwe_id": "CWE-918",
+    "name": "Server-Side Request Forgery (SSRF)",
+    "severity": "HIGH",
+    "description": "The application fetches remote resources using user-supplied URLs without adequate validation.",
+    "detection_patterns": [
+      "requests.get(user_url)",
+      "requests.post(user_url)",
+      "urllib.request.urlopen(user_input)",
+      "httpx.get(user_input)",
+      "fetch(user_input) in Node.js"
+    ],
+    "fix": "Validate URLs against an allowlist. Block requests to private IP ranges (10.x, 172.16.x, 192.168.x, 169.254.x).",
+    "languages": ["python", "javascript", "php"]
+  },
+  {
+    "cwe_id": "CWE-306",
+    "name": "Missing Authentication for Critical Function",
+    "severity": "CRITICAL",
+    "description": "A critical function or endpoint is accessible without authentication.",
+    "detection_patterns": [
+      "admin route without @login_required decorator",
+      "API endpoint without token/session check",
+      "delete/update function without authentication",
+      "no session validation before privileged operation"
+    ],
+    "fix": "Enforce authentication on all sensitive endpoints using decorators, middleware, or guard clauses.",
+    "languages": ["python", "javascript", "php", "java"]
+  },
+  {
+    "cwe_id": "CWE-532",
+    "name": "Insertion of Sensitive Information into Log File",
+    "severity": "MEDIUM",
+    "description": "Passwords, tokens, or other sensitive data are written to log files.",
+    "detection_patterns": [
+      "logging.info() containing password variable",
+      "print() containing token or secret",
+      "logger.debug() with full request body including credentials",
+      "logging unsanitized user input (log injection)"
+    ],
+    "fix": "Never log passwords, tokens, or PII. Sanitize user input before logging to prevent log injection.",
+    "languages": ["python", "javascript", "java"]
+  },
+  {
+    "cwe_id": "CWE-209",
+    "name": "Generation of Error Message Containing Sensitive Information",
+    "severity": "MEDIUM",
+    "description": "Error messages or stack traces expose internal implementation details to the user.",
+    "detection_patterns": [
+      "DEBUG = True in production config",
+      "return str(exception) to user",
+      "traceback.print_exc() sent to response",
+      "verbose error handler sending stack trace"
+    ],
+    "fix": "Catch exceptions and return generic error messages. Log full details server-side only.",
+    "languages": ["python", "javascript", "php", "java"]
+  }
+]
